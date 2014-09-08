@@ -1,0 +1,112 @@
+%%%%%%%%%%%%%
+% Préambule %
+%%%%%%%%%%%%%
+
+\documentclass[12pt,a4paper,oneside,fleqn]{book} % Utiliser article si nécessaire
+\usepackage[latin1]{inputenc} % Pour les accents
+\usepackage[T1]{fontenc} 
+\usepackage[francais]{babel} % Pour la typographie
+\usepackage[usenames]{color} % Pour les couleurs
+\usepackage{amssymb} % Pour les symboles
+\usepackage{amsmath} % Pour les maths
+\usepackage{amsthm} % Pour les théorèmes
+\usepackage{fullpage} % Pour les marges
+\usepackage{setspace} % Pour les espaces
+\usepackage{array} % Pour les tableaux
+\usepackage{tikz} % Pour les graphes
+\usepackage{pgfplots} % Pour les fonctions
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+\renewcommand\thesection{\Roman{section}}
+\renewcommand\thesubsection{\quad\arabic{subsection}}
+\renewcommand\thesubsubsection{\qquad\alph{subsubsection}}
+\newtheorem{example}{Exemple}
+\newtheorem{remark}{Remarque}
+
+% Commandes ponctuelles
+
+\usepackage{circuitikz}
+\onehalfspacing
+
+%%%%%%%%%%%%
+% Document %
+%%%%%%%%%%%%
+
+\begin{document}
+
+\title{Troisième année --- Électronique et Instrumentation}
+\author{Richard \textsc{Degenne}, L3-B}
+\date{\today}
+
+
+\maketitle
+
+\pagebreak
+
+\tableofcontents
+
+\pagebreak
+
+\chapter{Capteurs}
+
+\section{Caractéristiques générales et définitions}
+
+En automatique, on asservit des valeurs (position, température, vitesse, pression, \ldots) grâce à des capteurs. Ce cours va porter sur les différents capteurs utilisés dans ce genre de système dont en voici quelques exemples.
+
+\begin{description}
+	\item[Température]{Thermistance, thermocouple\footnote{Le mot \emph{couple} ne fait pas référence ici à un couple mécanique, mais à l'association de deux matériaux produisant une tension fortement dépendante de la température ambiante.}, circuits intégrés ;}
+	\item[Vitesse]{Tachymètre, dynamo tachymétrique ;}
+	\item[Position]{Potentiomètre\ldots}
+\end{description}
+
+\begin{remark}
+	Les grandeurs de sortie des capteurs sont généralement électriques afin de permettre leur traitement par des systèmes électroniques ou automatisés. La grandeur de sortie d'un capteur peut donc être un (ou une) tension, courant, charge électrique, résistance, inductance ou capacité (ou de manière plus générale, une impédence).
+\end{remark}
+
+\subsection{Définitions}
+
+\subsubsection{Conditionneur}
+
+Le signal de sortie est dans la plupart des cas analogie, et, lorsque le système est piloté par un automate, le signal doit être numérisé à l'aide d'un \textsc{Can}\footnote{Convertisseur Analogique--Numérique} ou par un autre système, appelé dans ce cas conditionneur. Il est à noter que cette conversion n'est pas nécessaire dans le cas d'un système piloté par micro-contrôleur dans la mesure où la plupart d'entre eux intègre des convertisseurs.
+
+\subsubsection{Étendue de mesure}
+
+On appelle étendue de mesure la plage de valeurs de la grandeur physique sur laquelle la mesure de sortie est définie est étalonnée. Au-delà de cette étendue, on s'expose à des risques de saturation voire de desctruction du capteur.
+
+\subsubsection{Courbe d'étalonnage}
+
+Une courbe d'étalonnage décrit la variation de la grandeur de sortie en fonction de la grandeur physique mesurée. On préfère utiliser de manière générale des capteurs linéaires : leur courbe d'étalonnage est définie par une fonction affine de la grandeur d'entrée, ce qui simplifie grandement les calculs, qu'ils soient faits manuellement ou par un système automatisé.
+
+\subsubsection{Sensibilité}
+
+D'un point de vue mathématique, la sensibilité est la dérivée de la grandeur de sortie $s$ par rapport à la grandeur d'entrée $v$, notée $\frac{\partial s}{\partial v}$. D'un point de vue physique, la sensibilité décrit (comme son nom l'indique) l'ampleur des variations de la grandeur de sortie pour une variation donnée de la grandeur d'entrée. Un capteur peu sensible possèdera une étendue de mesure plus grande mais risque de présenter des imprécisions là où un capteur très sensible sera très précis mais aura en contrepartie une étendue de mesure plus petite.
+
+\subsubsection{Finesse}
+
+L'effet d'un capteur sur la grandeur physique à mesurer se caractérise par la finesse de ce capteur. Par exemple, pour fonctionner, un thermistance doit être traversée par un courant. Ce faisant, la thermistance dissipera une énergie par effet Joule $E_j=r_t\,i^2$, chauffant ainsi la thermistance et apportant une erreur de mesure. Dans ce cas, il faut choisir $i$ le plus petit possible pour améliorer la finesse de la thermistance.
+
+\begin{example}{La thermistance}
+	\begin{figure}[h!]
+	\begin{center}
+		\begin{circuitikz}[european]
+			\draw (0,4) node[rground,rotate=180]{} node[above=10pt]{$E$}
+				to [R, l=$r_1$] (0,2)
+				to [vR, l=$r_t$] (0,0);
+			\draw (0,0) node[ground]{};
+			\draw (0,2) to [short] (2,2)
+				to [voltmeter,v^=$v$] (2,0);
+			\draw (2,0) node[ground]{};
+		\end{circuitikz}
+		\caption{Montage d'une thermistance dans un point diviseur de tension}
+	\end{center}
+	\end{figure}
+
+	On réalise ici un pont diviseur de tension pour mesurer la valeur de $r_t$.
+	\[r_t=\frac{r_1}{\frac{E}{v}-1}\]
+
+	Ensuite, à partir de la documentation technique\footnote{Diapositives 29 à 34 du cours} de la thermistance, on peut établir une relation entre $r_t$ et la température $T$, à savoir:
+	\[\displaystyle T=\frac{1}{\frac{1}{t_r} + \frac{1}{B}\,\ln\left(\frac{r_t}{r_b}\right)}\]
+	où $t_r$ est la température nominale\footnote{En anglais, \emph{nominale} se dit \emph{rated}, d'où la lettre $r$ en indice.}, $r_r$ la résistance nominale et $B$ une constante dépendant de la thermistance et de sa température de fonctionnement. Encore une fois, la valeur de cette constante se retrouve dans la docuementation du capteur.
+\end{example}
+\end{document}
